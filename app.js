@@ -12,6 +12,7 @@ app.use(express.urlencoded({ extended: true }))
 
 app.use('/api/users', userRoutes)
 app.use('/api/tours', tourRoutes)
+app.use('/api/reviews', reviewRoutes)
 
 // next(arg) => yo arg ma j pathayo tyo err ma auxa.
 

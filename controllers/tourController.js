@@ -1,4 +1,4 @@
-let Tour = require('../models/TourModel')
+let Tour = require('../models/tourModel')
 let catchAsync = require('../utils/catchAsync')
 
 exports.getAllTours = catchAsync(async (req, res, next) => {
@@ -7,6 +7,14 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
         status: 'success',
         total: tours.length,
         tours
+    })
+})
+
+exports.getTour = catchAsync(async(req, res, next) => {
+    let tour = await Tour.findById(req.params.id).populate({path: 'reviews', select: {name: 1}})
+    res.status(200).json({
+        status: 'success',
+        tour
     })
 })
 

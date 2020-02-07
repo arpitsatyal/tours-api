@@ -12,6 +12,8 @@ Router.route('/')
     reviewController.setTourAndUserIds,
     reviewController.createReview)
 
+.delete(authController.protect,
+    authController.restrictTo('admin'),
+    reviewController.deleteReview)
 
-Router.use('/reviews/delete', reviewController.deleteReview)
 module.exports = Router

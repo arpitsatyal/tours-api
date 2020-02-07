@@ -1,6 +1,6 @@
 let mongoose = require('mongoose')
 
-let tourSchema = new mongoose.Schema({
+let tourSchema = mongoose.Schema({
     name: {
         type: String,
         required: true
@@ -24,7 +24,7 @@ let tourSchema = new mongoose.Schema({
         min: 0.1,
         max: 5,
         set: function (val) {
-            return Math.round(val * 1)
+            return Math.floor(Math.round(val * 1))
         }
     },
     ratingsQuantity: {
@@ -53,10 +53,13 @@ let tourSchema = new mongoose.Schema({
     timestamps: true
 })
 
+tourSchema.set('toObject', { virtuals: true })
+tourSchema.set('toJSON', { virtuals: true })
+
 tourSchema.virtual('reviews', {
     ref: 'Review',
     localField: '_id',
-    foreignField: 'tours'
+    foreignField: 'tour'
 })
 
 tourSchema.pre(/^find/, function (next) {

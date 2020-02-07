@@ -58,3 +58,5 @@ userSchema.methods.verifyPassword = async function(p1, p2) {
 let userModel = mongoose.model('User', userSchema)
 
 module.exports = userModel 
+
+
