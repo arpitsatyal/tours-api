@@ -1,6 +1,7 @@
 let mongoose = require('mongoose')
 let validator = require('validator')
 let bcrypt = require('bcryptjs')
+let crypto = require('crypto')
 
 let userSchema = new mongoose.Schema({
     name: {
@@ -27,7 +28,9 @@ let userSchema = new mongoose.Schema({
         type: String,
         enum: ['user', 'admin', 'guide'],
         default: 'user'
-    }
+    },
+    passwordResetToken: String,
+    passwordResetExpires: Date
 })
 
 userSchema.set('toObject', { virtuals: true })
@@ -53,6 +56,17 @@ userSchema.pre('save', async function(next) {
 
 userSchema.methods.verifyPassword = async function(p1, p2) {
     return await bcrypt.compare(p1, p2)
+}
+
+// resetToken = sent as email
+// hashed one = stored in db
+userSchema.methods.createResetToken = function() {
+    let resetToken = crypto.randomBytes(32).toString('hex')
+    this.passwordResetToken = crypto.createHash('sha256')
+    .update(resetToken)
+    .digest('hex')
+    this.passwordResetExpires = Date.now() + 10 * 60 * 1000
+    return resetToken
 }
 
 let userModel = mongoose.model('User', userSchema)

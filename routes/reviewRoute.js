@@ -16,4 +16,12 @@ Router.route('/')
     authController.restrictTo('admin'),
     reviewController.deleteReview)
 
+Router.route('/:id')
+
+.get(authController.protect,
+    reviewController.getReview)
+
+.patch(authController.protect,
+    reviewController.updateReview)
+
 module.exports = Router

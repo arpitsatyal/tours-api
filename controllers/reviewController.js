@@ -16,6 +16,14 @@ exports.getAllReviews = catchAsync(async(req, res, next) => {
     })
 })
 
+exports.getReview =  catchAsync(async(req, res, next) => {
+    let review = await Review.findById(req.params.id)
+    res.status(200).json({
+        status: 'success',
+        review
+    })
+})
+
 exports.createReview = catchAsync(async(req, res, next) => {
     let reviews = await Review.create({
         ...req.body,
@@ -27,6 +35,14 @@ exports.createReview = catchAsync(async(req, res, next) => {
         status: 'success',
         total: reviews.length,
         reviews
+    })
+})
+
+exports.updateReview = catchAsync(async(req, res, next) => {
+    let updated = await Review.findByIdAndUpdate(req.params.id, req.body, {runValidators: true, new: true})
+    res.status(200).json({
+        status: 'success',
+        updated
     })
 })
 

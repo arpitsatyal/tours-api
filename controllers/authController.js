@@ -1,6 +1,7 @@
 let jwt = require('jsonwebtoken')
 let User = require('../models/userModel')
 let catchAsync = require('../utils/catchAsync')
+let sendEmail = require('../utils/email')
 
 let signToken = id => jwt.sign({ id }, process.env.JWT_SECRET)
 
@@ -48,14 +49,55 @@ exports.protect = catchAsync(async (req, res, next) => {
     next()
 })
 
+exports.forgotPassword = async (req, res, next) => {
+    let { email } = req.body
+    if (!email) return next({ error: 'plz provide email' })
+    let user = await User.findOne({ email })
+    if (!user) return next({
+        status: 400,
+        error: 'invalid email'
+    })
+
+    // generate random reset token
+    let resetToken = user.createResetToken()
+    await user.save({ validateBeforeSave: false })
+
+    // send it as user's email
+    let resetURL = `${req.protocol}://${req.get('host')}api/v1/users/resetPassword/${resetToken}`
+    let message = `forgot yer password? dont worry, submit this with your new password to ${resetURL}`
+    try {
+        await sendEmail({
+            message, email: user.email,
+            subject: 'password reset token'
+        })
+        res.status(200).json({
+            status: 'success',
+            msg: 'token sent to client'
+        })
+        
+    } catch (e) {
+        user.passwordResetToken = undefined
+        user.passwordResetExpires = undefined
+        await user.save({ validateBeforeSave: false })
+        return next({
+            status: 500,
+            error: 'error sending the email, try again'
+        })
+    }
+}
+
+exports.resetPassword = async (req, res, next) => {
+
+}
+
 exports.restrictTo = (...roles) => {
     return (req, res, next) => {
-       if(!roles.includes(req.user.role)) {
-           return next({
-               status: 403,
-               error: 'not authorized, dude.'
-           })
-       }
+        if (!roles.includes(req.user.role)) {
+            return next({
+                status: 403,
+                error: 'not authorized, dude.'
+            })
+        }
         next()
     }
 }

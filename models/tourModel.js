@@ -20,7 +20,7 @@ let tourSchema = mongoose.Schema({
     },
     ratingsAvg: {
         type: Number,
-        default: 1,
+        default: 0,
         min: 0.1,
         max: 5,
         set: function (val) {
@@ -28,7 +28,8 @@ let tourSchema = mongoose.Schema({
         }
     },
     ratingsQuantity: {
-        type: Number
+        type: Number,
+        default: 0
     },
     price: {
         type: Number

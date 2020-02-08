@@ -48,20 +48,28 @@ reviewSchema.statics.calcAvgRatings = async function(tourID) {
            }
        }
    ])
-//    await Tour.findByIdAndUpdate(tourID, {
-//     ratingsAvg: stats[0].numRatings,
-//     ratingsQuantity: stats[0].avgRatings
-//    })
+   await Tour.findByIdAndUpdate(tourID, {
+    ratingsAvg: stats[0].avgRatings,
+    ratingsQuantity: stats[0].numRatings
+   })
+//    console.log(stats)
 }
 
+reviewSchema.pre(/^findOneAnd/, async function(next) {
+    this.rev = await this.findOne()
+    next()
+})
+
+reviewSchema.post(/^findOneAnd/, async function() {
+    await this.rev.constructor.calcAvgRatings(this.rev.tour._id)
+})
+
 reviewSchema.post('save', function() {
-    // since calcAvgRatings is defined in schema it will be only available to the models.
+    // since calcAvgRatings is defined in statics it will be only available to the models.
     // so constructor will give us access to the document not the model
-    this.constructor.calcAvgRatings(this.tour)
+    this.constructor.calcAvgRatings(this.tour._id)
 })
 
 let reviewModel = mongoose.model('Review', reviewSchema)
 
 module.exports = reviewModel 
-
-// nested routes => tour/tourid/reviews
