@@ -2,14 +2,15 @@ let jwt = require('jsonwebtoken')
 let User = require('../models/userModel')
 let catchAsync = require('../utils/catchAsync')
 let sendEmail = require('../utils/email')
+let crypto = require('crypto')
 
 let signToken = id => jwt.sign({ id }, process.env.JWT_SECRET)
 
-let sendToken = (newUser, statusCode, res) => {
-    let token = signToken(newUser._id)
+let sendToken = (user, statusCode, res) => {
+    let token = signToken(user._id)
     res.status(statusCode).json({
         token,
-        newUser
+        user
     })
 }
 
@@ -74,8 +75,9 @@ exports.forgotPassword = async (req, res, next) => {
             status: 'success',
             msg: 'token sent to client'
         })
-        
+
     } catch (e) {
+        console.log(e)
         user.passwordResetToken = undefined
         user.passwordResetExpires = undefined
         await user.save({ validateBeforeSave: false })
@@ -86,9 +88,27 @@ exports.forgotPassword = async (req, res, next) => {
     }
 }
 
-exports.resetPassword = async (req, res, next) => {
+exports.resetPassword = catchAsync(async (req, res, next) => {
+    // 1 get user based on the token
+    let hashedToken = crypto.createHash('sha256')
+    .update(req.params.token)
+    .digest('hex')
 
-}
+    // 2 if token hasnt expired and if there is user, set the new psd
+    let user = await User.findOne({ 
+        passwordResetToken: hashedToken,
+        passwordResetExpires:  { $gte: Date.now() }
+    })
+    if(!user) return next( { error: 'token has expired' } )
+
+        user.password = req.body.password
+        user.passwordResetToken = undefined
+        user.passwordResetExpires = undefined
+        await user.save()
+
+    // 4 log the user in
+    sendToken(user, 200, res)
+})
 
 exports.restrictTo = (...roles) => {
     return (req, res, next) => {
