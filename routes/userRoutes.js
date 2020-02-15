@@ -18,4 +18,5 @@ Router.route('/:id')
 Router.post('/login', authController.login)
 Router.post('/forgotPassword', authController.forgotPassword)
 Router.patch('/resetPassword/:token', authController.resetPassword)
+Router.get('/checkUsername/:username', userController.checkUsername)
 module.exports = Router

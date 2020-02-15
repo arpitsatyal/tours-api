@@ -4,11 +4,13 @@ let morgan = require('morgan')
 let userRoutes = require('./routes/userRoutes')
 let tourRoutes = require('./routes/tourRoutes')
 let reviewRoutes = require('./routes/reviewRoute')
+let cors = require('cors')
 
 app.use(morgan('dev'))
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use(cors())
 
 app.use('/api/users', userRoutes)
 app.use('/api/tours', tourRoutes)

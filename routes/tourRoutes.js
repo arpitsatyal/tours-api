@@ -6,6 +6,11 @@ let reviewRouter = require('../routes/reviewRoute')
 
 Router.use('/:tourId/reviews', reviewRouter)
 
+Router.route('/top-5-cheap')
+.get(tourController.aliasTopTours, tourController.getAllTours)
+Router.get('/most-expensive-tours', 
+tourController.mostExpensiveTours, tourController.getAllTours)
+
 Router.route('/')
 .get(authController.protect,
     tourController.getAllTours)

@@ -31,3 +31,18 @@ exports.deleteUser = catchAsync(async(req, res, next) => {
     await User.findByIdAndDelete(req.params.id)
     res.status(204).json(null)
 })
+
+exports.checkUsername = (req, res, next) => {
+    let condition = {}
+    condition.username = req.params.username
+    User.findOne(condition)
+    .then(data => {
+        console.log(data)
+        // console.log(data) => if query gives null then falsy value
+        if(data) {
+        res.status(200).json(data)
+        } else {
+            next({error: 'user aint found'})
+        }
+    })
+}

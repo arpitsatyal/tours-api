@@ -21,7 +21,7 @@ let tourSchema = mongoose.Schema({
     ratingsAvg: {
         type: Number,
         default: 0,
-        min: 0.1,
+        min: 0,
         max: 5,
         set: function (val) {
             return Math.floor(Math.round(val * 1))

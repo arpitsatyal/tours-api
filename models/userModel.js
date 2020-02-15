@@ -4,7 +4,7 @@ let bcrypt = require('bcryptjs')
 let crypto = require('crypto')
 
 let userSchema = new mongoose.Schema({
-    name: {
+    username: {
         type: String,
         unique: true,
         required: true,
