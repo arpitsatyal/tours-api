@@ -3,6 +3,7 @@ let Router = express.Router()
 let tourController = require('../controllers/tourController')
 let authController = require('../controllers/authController')
 let reviewRouter = require('../routes/reviewRoute')
+let upload = require('../utils/multer')()
 
 Router.use('/:tourId/reviews', reviewRouter)
 
@@ -16,6 +17,7 @@ Router.route('/')
     tourController.getAllTours)
     
 .post(authController.protect,
+    upload.single('file'),
     tourController.createTour)
 
 Router.route('/:id')
