@@ -2,8 +2,8 @@ let mongoose = require('mongoose')
 
 let tourSchema = mongoose.Schema({
     name: {
-        type: String,
-        required: true
+        type: String
+        // required: true
     },
     maxGroupSize: {
         type: Number

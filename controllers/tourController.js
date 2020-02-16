@@ -2,6 +2,7 @@ let Tour = require('../models/tourModel')
 let catchAsync = require('../utils/catchAsync')
 let fs = require('fs')
 let path = require('path')
+let upload = require('../utils/multer')()
 
 exports.aliasTopTours = catchAsync(async (req, res, next) => {
     req.query.limit = '5'
@@ -25,7 +26,7 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
     let queryString = JSON.stringify(queryObject)
     queryString = queryString.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`)
     let updatedQueryString = JSON.parse(queryString)
-    console.log(updatedQueryString)
+    // console.log(updatedQueryString)
     let query = Tour.find(updatedQueryString)
     // SORT
     if (req.query.sort) {
@@ -69,30 +70,33 @@ exports.getTour = catchAsync(async (req, res, next) => {
 })
 
 exports.createTour = (req, res, next) => {
-    console.log('req.file', req.file)
-    if (req.file) {
-        let mimeType = req.file.mimetype.split('/')[0]
-        if (mimeType !== 'image') {
-            fs.unlink(path.join(process.cwd(), 'uploads/'), (err, done) => {
-                if (err) console.log(err)
-            })
-        }
-        req.body.imageCover = req.file.filename
-    }
     if (req.fileError) { return next({ error: 'invalid file format dude' }) }
+    // console.log('req body is', req.body)
     Tour.create({
         ...req.body,
         owner: req.user._id
     }).then(result => {
         res.status(201).json({
             status: 'success',
-            total: res.length,
+            total: result.length,
             result
         })
-    }).catch(err => next(err))
+    }).catch(err => {
+        if(req.file) {
+        fs.unlink(path.join(process.cwd(), 'uploads/' + req.file.filename), () => { })
+        }
+        next(err)
+    })
 }
 
 exports.updateTour = catchAsync(async (req, res, next) => {
+    if (req.fileError) { return next({ error: 'invalid file format dude' }) }
+
+    Tour.findById(req.params.id).then(tour => {
+        let p = path.join(process.cwd(), '/uploads/' + tour.imageCover)
+        fs.unlink(p, (err, done) => err ? console.log(err) : '')
+    }).catch(e => next(e))
+
     let updated = await Tour.findByIdAndUpdate(req.params.id, req.body, { runValidators: true, new: true })
     res.status(200).json({
         status: 'sucess',
