@@ -3,3 +3,4 @@ config.env
 dev-data/
 notes.js
 oAuth.js
+uploads/
