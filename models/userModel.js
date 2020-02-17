@@ -29,6 +29,10 @@ let userSchema = new mongoose.Schema({
         enum: ['user', 'admin', 'guide'],
         default: 'user'
     },
+    profilePic: {
+        type: String,
+        default: 'default.jpg'
+    },
     passwordResetToken: String,
     passwordResetExpires: Date
 })

@@ -2,6 +2,7 @@ let express = require('express')
 let Router = express.Router()
 let userController = require('../controllers/userController')
 let authController = require('../controllers/authController')
+let multerConfig = require('../utils/multerConfigs')
 
 Router.route('/')
 .get(authController.protect,
@@ -12,7 +13,11 @@ Router.route('/')
 
 Router.route('/:id')
 .get(userController.getUser)
-.patch(userController.updateUser)
+
+.patch(multerConfig.setMulter,
+    multerConfig.uploadSingle,
+    userController.updateUser)
+
 .delete(userController.deleteUser)
 
 Router.post('/login', authController.login)

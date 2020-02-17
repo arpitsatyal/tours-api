@@ -6,37 +6,47 @@ let path = require('path')
 exports.setMulter = upload.fields([
     {
         name: 'imageCover', maxCount: 1
-    }, {
+    }, 
+    {
+        name: 'profilePic', maxCount: 1
+    },
+    {
         name: 'images', maxCount: 12
     }
 ])
 
-exports.deleteFile = file => {
-    let p = path.join(process.cwd(), '/uploads/' + file)
+exports.deleteFile = (file, dest) => {
+    let p = path.join(process.cwd(), `/uploads/${dest}/` + file)
     fs.unlink(p, (err, done) => err ? console.log(err) : '')
+}
+
+async function resize(file, path, body) {
+    await sharp(file)
+            .resize(400, 400)
+            .toFormat('png')
+            .png({ quality: 90 })
+            .toFile(`uploads/${path}/${body}`)
 }
 
 exports.uploadSingle = async (req, res, next) => {
     try {
-        if (!req.files.imageCover) return next()
-
         // ### when uploading using diskstorage ###
         // let file = req.files.imageCover[0]
         // req.body.imageCover = file.filename
 
+        if(req.files.imageCover) {
         req.body.imageCover = `${Date.now()}-image.png`
         // console.log('filename>>>', req.files.imageCover[0]) => does NOT have filename
-        await sharp(req.files.imageCover[0].buffer)
-            .resize(400, 400)
-            .toFormat('png')
-            .png({ quality: 90 })
-            .toFile(`uploads/${req.body.imageCover}`)
+        resize(req.files.imageCover[0].buffer, 'tours', req.body.imageCover)
+        } 
+
+        if(req.files.profilePic) {
+            req.body.profilePic = `${Date.now()}-user.png`
+            resize(req.files.profilePic[0].buffer, 'users', req.body.profilePic)
+            } 
+            
         next()
-    } catch (e) {
-        // console.log(req.body.imageCover)
-        deleteFile(req.body.imageCover)
-        next(e)
-    }
+    } catch (e) {  next(e) }
 }
 
 exports.uploadMultiple = async (req, res, next) => {
@@ -48,7 +58,7 @@ exports.uploadMultiple = async (req, res, next) => {
         let processing = allFiles.map(async (file, i) => {
             let imageName = `${Date.now()}-${i + 1}.png`
             await sharp(file.buffer)
-                .resize(400, 400).toFormat('png').png({ quality: 90 }).toFile(`uploads/${imageName}`)
+                .resize(400, 400).toFormat('png').png({ quality: 90 }).toFile(`uploads/tours/${imageName}`)
                 req.body.images.push(imageName)
         })
         // console.log(processing) => no of promises pending in req.files.images

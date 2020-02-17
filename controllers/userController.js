@@ -1,5 +1,6 @@
 let User = require('../models/userModel')
 let catchAsync = require('../utils/catchAsync')
+let { deleteFile } = require('../utils/multerConfigs')
 
 exports.getAllUsers = catchAsync(async (req, res, next) => {
     let users = await User.find().select('-__v').select('-password')
@@ -20,6 +21,11 @@ exports.getUser = catchAsync(async (req, res, next) => {
 })
 
 exports.updateUser = catchAsync(async(req, res, next) => {
+    if (req.fileError) { return next({ error: 'invalid file format dude' }) }
+    let user = await User.findById(req.params.id)
+    if(user.profilePic !== 'default.jpg') {
+    deleteFile(user.profilePic, 'users')
+    }
     let updated = await User.findByIdAndUpdate(req.params.id, req.body, { runValidators: true, new: true })
     res.status(200).json({
         status: 'sucess',

@@ -88,12 +88,12 @@ exports.updateTour = catchAsync(async (req, res, next) => {
     Tour.findById(req.params.id).then(tour => {
 
         if (req.files.imageCover) {
-            deleteFile(tour.imageCover)
+            if(tour.imageCover) deleteFile(tour.imageCover, 'tours')
             // coz saved in db as tour:imageCover
 
         } else if (req.files.images) {
             let allImages = tour.images
-            allImages.forEach(image => deleteFile(image))
+            allImages.forEach(image => deleteFile(image, 'tours'))
         }
 
     }).catch(e => next(e))
@@ -107,7 +107,7 @@ exports.updateTour = catchAsync(async (req, res, next) => {
 
 exports.deleteTour = catchAsync(async (req, res, next) => {
     let tour = await Tour.findById(req.params.id)
-    tour.images.forEach(image => deleteFile(image))
+    tour.images.forEach(image => deleteFile(image, 'tours'))
     await Tour.findByIdAndDelete(req.params.id)
     res.status(204).json(null)
 })
