@@ -2,7 +2,6 @@ let Tour = require('../models/tourModel')
 let catchAsync = require('../utils/catchAsync')
 let fs = require('fs')
 let path = require('path')
-let upload = require('../utils/multer')()
 
 exports.aliasTopTours = catchAsync(async (req, res, next) => {
     req.query.limit = '5'
@@ -69,6 +68,11 @@ exports.getTour = catchAsync(async (req, res, next) => {
     })
 })
 
+function deleteFile(file) {
+    let p = path.join(process.cwd(), '/uploads/' + file)
+    fs.unlink(p, (err, done) => err ? console.log(err) : '')
+}
+
 exports.createTour = (req, res, next) => {
     if (req.fileError) { return next({ error: 'invalid file format dude' }) }
     // console.log('reqfiles', req.files)
@@ -83,12 +87,11 @@ exports.createTour = (req, res, next) => {
         })
     }).catch(err => {
         if (req.files.imageCover) {
-            fs.unlink(path.join(process.cwd(), 'uploads/' + req.files.imageCover[0].filename), () => { })
+            console.log('i did it')
+            // deleteFile(req.files.imageCover[0].filename)
         }
         if (req.files.images) {
-            req.files.images.forEach(file => {
-                fs.unlink(path.join(process.cwd(), 'uploads/' + file.filename), (err, done) => err ? console.log(err) : '')
-            })
+            req.files.images.forEach(file => deleteFile(file.filename))
         }
         next(err)
     })
@@ -98,9 +101,16 @@ exports.updateTour = catchAsync(async (req, res, next) => {
     if (req.fileError) { return next({ error: 'invalid file format dude' }) }
 
     Tour.findById(req.params.id).then(tour => {
-        let p = path.join(process.cwd(), '/uploads/' + tour.imageCover) 
-        // coz saved in db as tour:imageCover
-        fs.unlink(p, (err, done) => err ? console.log(err) : '')
+
+        if (req.files.imageCover) {
+            deleteFile(tour.imageCover)
+            // coz saved in db as tour:imageCover
+
+        } else if (req.files.images) {
+            let allImages = tour.images
+            allImages.forEach(image => deleteFile(image))
+        }
+
     }).catch(e => next(e))
 
     let updated = await Tour.findByIdAndUpdate(req.params.id, req.body, { runValidators: true, new: true })

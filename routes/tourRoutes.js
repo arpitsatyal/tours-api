@@ -28,6 +28,7 @@ Router.route('/:id')
 .patch(
     multerConfigs.setMulter,
     multerConfigs.uploadSingle,
+    multerConfigs.uploadMultiple,
     tourController.updateTour)
 
 .delete(tourController.deleteTour)
