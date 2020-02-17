@@ -71,7 +71,7 @@ exports.getTour = catchAsync(async (req, res, next) => {
 
 exports.createTour = (req, res, next) => {
     if (req.fileError) { return next({ error: 'invalid file format dude' }) }
-    // console.log('req body is', req.body)
+    // console.log('reqfiles', req.files)
     Tour.create({
         ...req.body,
         owner: req.user._id
@@ -82,8 +82,13 @@ exports.createTour = (req, res, next) => {
             result
         })
     }).catch(err => {
-        if(req.file) {
-        fs.unlink(path.join(process.cwd(), 'uploads/' + req.file.filename), () => { })
+        if (req.files.imageCover) {
+            fs.unlink(path.join(process.cwd(), 'uploads/' + req.files.imageCover[0].filename), () => { })
+        }
+        if (req.files.images) {
+            req.files.images.forEach(file => {
+                fs.unlink(path.join(process.cwd(), 'uploads/' + file.filename), (err, done) => err ? console.log(err) : '')
+            })
         }
         next(err)
     })
@@ -93,7 +98,8 @@ exports.updateTour = catchAsync(async (req, res, next) => {
     if (req.fileError) { return next({ error: 'invalid file format dude' }) }
 
     Tour.findById(req.params.id).then(tour => {
-        let p = path.join(process.cwd(), '/uploads/' + tour.imageCover)
+        let p = path.join(process.cwd(), '/uploads/' + tour.imageCover) 
+        // coz saved in db as tour:imageCover
         fs.unlink(p, (err, done) => err ? console.log(err) : '')
     }).catch(e => next(e))
 

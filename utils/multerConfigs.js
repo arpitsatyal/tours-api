@@ -9,7 +9,7 @@ exports.setMulter = upload.fields([
 ])
 
 exports.uploadSingle = (req, res, next) => {
-    if (!req.files.imageCover[0]) return next()
+    if (!req.files.imageCover) return next()
     let file = req.files.imageCover[0]
     let mimeType = file.mimetype.split('/')[0]
     if (mimeType !== 'image') {
@@ -23,6 +23,7 @@ exports.uploadSingle = (req, res, next) => {
 
 exports.uploadMultiple = (req, res, next) => {
     if(!req.files.images) return next()
+    // console.log(req.files.images)
     req.body.images = []
     let allFiles = req.files.images
     allFiles.forEach(file => {
