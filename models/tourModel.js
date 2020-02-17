@@ -65,7 +65,7 @@ tourSchema.virtual('reviews', {
 tourSchema.pre(/^find/, function (next) {
     this.populate({
         path: 'owner',
-        select: 'name'
+        select: 'username'
     })
     next()
 })

@@ -11,6 +11,8 @@ module.exports = () => {
         }
     })
 
+    let multerStorage = multer.memoryStorage()
+
     //filter out files that aint images
     filter = (req, file, cb) => {
         let mimeType = file.mimetype.split('/')[0]
@@ -23,7 +25,7 @@ module.exports = () => {
     }
 
     let upload = multer({
-        storage: myStorage,
+        storage: multerStorage,
         fileFilter: filter
     })
     return upload

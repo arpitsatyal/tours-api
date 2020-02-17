@@ -1,4 +1,5 @@
 let upload = require('./multer')()
+let sharp = require('sharp')
 
 exports.setMulter = upload.fields([
     {
@@ -8,21 +9,34 @@ exports.setMulter = upload.fields([
     }
 ])
 
-exports.uploadSingle = (req, res, next) => {
+exports.uploadSingle = async (req, res, next) => {
     if (!req.files.imageCover) return next()
-    let file = req.files.imageCover[0]
 
-    req.body.imageCover = file.filename
-    next()
+    // ### when uploading using diskstorage ###
+    // let file = req.files.imageCover[0]
+    // req.body.imageCover = file.filename
+
+    req.body.imageCover = `${Date.now()}-image.png`
+    await sharp(req.files.imageCover[0].buffer)
+        .resize(400,400)
+        .toFormat('png')
+        .png({ quality: 90 })
+        .toFile(`uploads/${req.body.imageCover}`)
+        next()
 }
 
-exports.uploadMultiple = (req, res, next) => {
+
+exports.uploadMultiple = async(req, res, next) => {
+
     if(!req.files.images) return next()
-    // console.log(req.files.images)
     req.body.images = []
     let allFiles = req.files.images
-    allFiles.forEach(file => {
-        req.body.images.push(file.filename)
+   let processing = allFiles.map(async(file, i) => {
+       let imageName = `${Date.now()}-${i + 1}.jpeg`
+        await sharp(file.buffer)
+        .resize(400,400).toFormat('png').toFile(`uploads/${imageName}`)
+        req.body.images.push(imageName)
     })
-    next()
+    Promise.all(processing)
+    .then(() => next())
 }

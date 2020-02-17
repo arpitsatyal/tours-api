@@ -74,8 +74,8 @@ function deleteFile(file) {
 }
 
 exports.createTour = (req, res, next) => {
+    // console.log('reqfiles', req.files.imageCover) => undefined if invalid; set by filter function
     if (req.fileError) { return next({ error: 'invalid file format dude' }) }
-    // console.log('reqfiles', req.files)
     Tour.create({
         ...req.body,
         owner: req.user._id
@@ -88,7 +88,7 @@ exports.createTour = (req, res, next) => {
     }).catch(err => {
         if (req.files.imageCover) {
             console.log('i did it')
-            // deleteFile(req.files.imageCover[0].filename)
+            deleteFile(req.files.imageCover[0].filename)
         }
         if (req.files.images) {
             req.files.images.forEach(file => deleteFile(file.filename))
@@ -121,6 +121,8 @@ exports.updateTour = catchAsync(async (req, res, next) => {
 })
 
 exports.deleteTour = catchAsync(async (req, res, next) => {
+    let tour = await Tour.findById(req.params.id)
+    tour.images.forEach(image => deleteFile(image))
     await Tour.findByIdAndDelete(req.params.id)
     res.status(204).json(null)
 })
