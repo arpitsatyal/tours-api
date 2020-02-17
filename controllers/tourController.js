@@ -1,7 +1,6 @@
 let Tour = require('../models/tourModel')
 let catchAsync = require('../utils/catchAsync')
-let fs = require('fs')
-let path = require('path')
+let { deleteFile } = require('../utils/multerConfigs')
 
 exports.aliasTopTours = catchAsync(async (req, res, next) => {
     req.query.limit = '5'
@@ -68,11 +67,6 @@ exports.getTour = catchAsync(async (req, res, next) => {
     })
 })
 
-function deleteFile(file) {
-    let p = path.join(process.cwd(), '/uploads/' + file)
-    fs.unlink(p, (err, done) => err ? console.log(err) : '')
-}
-
 exports.createTour = (req, res, next) => {
     // console.log('reqfiles', req.files.imageCover) => undefined if invalid; set by filter function
     if (req.fileError) { return next({ error: 'invalid file format dude' }) }
@@ -85,16 +79,7 @@ exports.createTour = (req, res, next) => {
             total: result.length,
             result
         })
-    }).catch(err => {
-        if (req.files.imageCover) {
-            console.log('i did it')
-            deleteFile(req.files.imageCover[0].filename)
-        }
-        if (req.files.images) {
-            req.files.images.forEach(file => deleteFile(file.filename))
-        }
-        next(err)
-    })
+    }).catch(err => next(err))
 }
 
 exports.updateTour = catchAsync(async (req, res, next) => {
@@ -126,3 +111,5 @@ exports.deleteTour = catchAsync(async (req, res, next) => {
     await Tour.findByIdAndDelete(req.params.id)
     res.status(204).json(null)
 })
+
+
