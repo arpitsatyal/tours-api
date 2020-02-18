@@ -55,15 +55,14 @@ exports.uploadMultiple = async (req, res, next) => {
         req.body.images = []
         let allFiles = req.files.images
 
-        let processing = allFiles.map(async (file, i) => {
-            let imageName = `${Date.now()}-${i + 1}.png`
+        for(file of allFiles) {
+            let r = Math.random() * 100
+            let imageName = `${Date.now()}-${r}.png`
             await sharp(file.buffer)
                 .resize(400, 400).toFormat('png').png({ quality: 90 }).toFile(`uploads/tours/${imageName}`)
                 req.body.images.push(imageName)
-        })
-        // console.log(processing) => no of promises pending in req.files.images
-        Promise.all(processing).then(() => next())
-
+        }
+        next()
     } catch (e) { next(e) }
 }
 

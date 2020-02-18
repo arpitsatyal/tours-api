@@ -92,10 +92,11 @@ exports.updateTour = catchAsync(async (req, res, next) => {
             // coz saved in db as tour:imageCover
 
         } else if (req.files.images) {
+            if(tour.images) {
             let allImages = tour.images
             allImages.forEach(image => deleteFile(image, 'tours'))
-        }
-
+        } 
+    }
     }).catch(e => next(e))
 
     let updated = await Tour.findByIdAndUpdate(req.params.id, req.body, { runValidators: true, new: true })
