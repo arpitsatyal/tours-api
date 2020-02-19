@@ -73,8 +73,8 @@ userSchema.methods.createResetToken = function() {
     return resetToken
 }
 
-let userModel = mongoose.model('User', userSchema)
+let User = mongoose.model('User', userSchema)
 
-module.exports = userModel 
+module.exports = User 
 
 

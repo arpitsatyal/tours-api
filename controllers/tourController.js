@@ -59,13 +59,15 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
     })
 })
 
-exports.getTour = catchAsync(async (req, res, next) => {
-    let tour = await Tour.findById(req.params.id).populate({ path: 'reviews', select: { name: 1 } })
-    res.status(200).json({
-        status: 'success',
-        tour
-    })
-})
+exports.getTour = async (req, res, next) => {
+    Tour.findById(req.params.id).populate('reviews')
+        .then(tour => {
+                res.status(200).json({
+                    status: 'success',
+                    tour
+                })
+        }).catch(e => next(e))
+}
 
 exports.createTour = (req, res, next) => {
     // console.log('reqfiles', req.files.imageCover) => undefined if invalid; set by filter function
@@ -88,15 +90,15 @@ exports.updateTour = catchAsync(async (req, res, next) => {
     Tour.findById(req.params.id).then(tour => {
 
         if (req.files.imageCover) {
-            if(tour.imageCover) deleteFile(tour.imageCover, 'tours')
+            if (tour.imageCover) deleteFile(tour.imageCover, 'tours')
             // coz saved in db as tour:imageCover
 
         } else if (req.files.images) {
-            if(tour.images) {
-            let allImages = tour.images
-            allImages.forEach(image => deleteFile(image, 'tours'))
-        } 
-    }
+            if (tour.images) {
+                let allImages = tour.images
+                allImages.forEach(image => deleteFile(image, 'tours'))
+            }
+        }
     }).catch(e => next(e))
 
     let updated = await Tour.findByIdAndUpdate(req.params.id, req.body, { runValidators: true, new: true })
@@ -108,7 +110,11 @@ exports.updateTour = catchAsync(async (req, res, next) => {
 
 exports.deleteTour = catchAsync(async (req, res, next) => {
     let tour = await Tour.findById(req.params.id)
-    tour.images.forEach(image => deleteFile(image, 'tours'))
+    if (tour.images.length) {
+        tour.images.forEach(image => deleteFile(image, 'tours'))
+        if (tour.imageCover) deleteFile(tour.imageCover, 'tours')
+    }
+
     await Tour.findByIdAndDelete(req.params.id)
     res.status(204).json(null)
 })

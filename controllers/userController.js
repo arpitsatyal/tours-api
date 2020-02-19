@@ -13,7 +13,7 @@ exports.getAllUsers = catchAsync(async (req, res, next) => {
 
 exports.getUser = catchAsync(async (req, res, next) => {
     // select: {'owner': 0}
-    let user = await User.findById(req.params.id).populate({path: 'tours', select: {'__v': 0}}).select('-password')
+    let user = await User.findById(req.params.id).populate({path: 'reviews', select: {'__v': 0}}).select('-password')
     res.status(200).json({
         status: 'success',
         user

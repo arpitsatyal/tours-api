@@ -62,14 +62,14 @@ tourSchema.virtual('reviews', {
     foreignField: 'tour'
 })
 
-tourSchema.pre(/^find/, function (next) {
-    this.populate({
-        path: 'owner',
-        select: 'username'
-    })
-    next()
-})
+// tourSchema.pre(/^find/, function (next) {
+//     this.populate({
+//         path: 'owner',
+//         select: 'username'
+//     })
+//     next()
+// })
 
-let tourModel = mongoose.model('Tour', tourSchema)
+let Tour = mongoose.model('Tour', tourSchema)
 
-module.exports = tourModel
+module.exports = Tour

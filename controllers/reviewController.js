@@ -8,7 +8,8 @@ exports.setTourAndUserIds = (req, res, next) => {
 }
 
 exports.getAllReviews = catchAsync(async(req, res, next) => {
-    let reviews = await Review.find({tour: req.body.tour, writer: req.user._id})
+    
+    let reviews = await Review.find({writer: req.user._id})
     res.status(200).json({
         status: 'success',
         total: reviews.length,

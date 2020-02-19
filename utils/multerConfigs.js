@@ -28,7 +28,7 @@ async function resize(file, path, body) {
         .toFile(`uploads/${path}/${body}`)
 }
 
-exports.uploadSingle = async (req, res, next) => {
+exports.uploadSingle = (req, res, next) => {
     try {
         // ### when uploading using diskstorage ###
         // let file = req.files.imageCover[0]
@@ -49,7 +49,7 @@ exports.uploadSingle = async (req, res, next) => {
     } catch (e) { next(e) }
 }
 
-exports.uploadMultiple = async (req, res, next) => {
+exports.uploadMultiple = (req, res, next) => {
     try {
         if (!req.files.images) return next()
         req.body.images = []
@@ -61,7 +61,7 @@ exports.uploadMultiple = async (req, res, next) => {
          resize(file.buffer, 'tours', imageName)
         })
         next()
-        
+
     } catch (e) { next(e) }
 }
 
