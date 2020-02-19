@@ -6,7 +6,7 @@ let path = require('path')
 exports.setMulter = upload.fields([
     {
         name: 'imageCover', maxCount: 1
-    }, 
+    },
     {
         name: 'profilePic', maxCount: 1
     },
@@ -22,10 +22,10 @@ exports.deleteFile = (file, dest) => {
 
 async function resize(file, path, body) {
     await sharp(file)
-            .resize(400, 400)
-            .toFormat('png')
-            .png({ quality: 90 })
-            .toFile(`uploads/${path}/${body}`)
+        .resize(400, 400)
+        .toFormat('png')
+        .png({ quality: 90 })
+        .toFile(`uploads/${path}/${body}`)
 }
 
 exports.uploadSingle = async (req, res, next) => {
@@ -34,19 +34,19 @@ exports.uploadSingle = async (req, res, next) => {
         // let file = req.files.imageCover[0]
         // req.body.imageCover = file.filename
 
-        if(req.files.imageCover) {
-        req.body.imageCover = `${Date.now()}-image.png`
-        // console.log('filename>>>', req.files.imageCover[0]) => does NOT have filename
-        resize(req.files.imageCover[0].buffer, 'tours', req.body.imageCover)
-        } 
+        if (req.files.imageCover) {
+            req.body.imageCover = `${Date.now()}-image.png`
+            // console.log('filename>>>', req.files.imageCover[0]) => does NOT have filename
+            resize(req.files.imageCover[0].buffer, 'tours', req.body.imageCover)
+        }
 
-        if(req.files.profilePic) {
+        if (req.files.profilePic) {
             req.body.profilePic = `${Date.now()}-user.png`
             resize(req.files.profilePic[0].buffer, 'users', req.body.profilePic)
-            } 
-            
+        }
+
         next()
-    } catch (e) {  next(e) }
+    } catch (e) { next(e) }
 }
 
 exports.uploadMultiple = async (req, res, next) => {
@@ -55,14 +55,13 @@ exports.uploadMultiple = async (req, res, next) => {
         req.body.images = []
         let allFiles = req.files.images
 
-        for(file of allFiles) {
-            let r = Math.random() * 100
-            let imageName = `${Date.now()}-${r}.png`
-            await sharp(file.buffer)
-                .resize(400, 400).toFormat('png').png({ quality: 90 }).toFile(`uploads/tours/${imageName}`)
-                req.body.images.push(imageName)
-        }
+         allFiles.forEach((file, i) => {
+         let imageName = `${Date.now()}-${i + 1}.png`
+         req.body.images.push(imageName)
+         resize(file.buffer, 'tours', imageName)
+        })
         next()
+        
     } catch (e) { next(e) }
 }
 

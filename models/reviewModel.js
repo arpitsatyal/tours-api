@@ -66,8 +66,6 @@ reviewSchema.post(/^findOneAnd/, async function() {
 })
 
 reviewSchema.post('save', function() {
-    // since calcAvgRatings is defined in statics it will be only available to the models.
-    // so constructor will give us access to the document not the model
     this.constructor.calcAvgRatings(this.tour._id)
 })
 

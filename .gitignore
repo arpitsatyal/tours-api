@@ -1,6 +1,6 @@
 node_modules/
 config.env
 dev-data/
-notes.js
+notes/
 oAuth.js
 uploads/
