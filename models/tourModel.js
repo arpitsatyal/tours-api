@@ -18,7 +18,7 @@ let tourSchema = mongoose.Schema({
             message: 'only select those'
         }
     },
-    ratingsAvg: {
+    ratingsAverage: {
         type: Number,
         min: 0,
         max: 5,
@@ -62,13 +62,13 @@ tourSchema.virtual('reviews', {
     foreignField: 'tour'
 })
 
-// tourSchema.pre(/^find/, function (next) {
-//     this.populate({
-//         path: 'owner',
-//         select: 'username'
-//     })
-//     next()
-// })
+tourSchema.pre(/^find/, function (next) {
+    this.populate({
+        path: 'owner',
+        select: 'username'
+    })
+    next()
+})
 
 let Tour = mongoose.model('Tour', tourSchema)
 

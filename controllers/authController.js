@@ -20,8 +20,8 @@ exports.signUp = catchAsync(async (req, res, next) => {
 })
 
 exports.login = catchAsync(async (req, res, next) => {
-    let { name, password } = req.body
-    let user = await User.findOne({ name })
+    let { username, password } = req.body
+    let user = await User.findOne({ username })
     if (!user) return next({
         status: 404,
         error: 'no such user exists.'
@@ -29,7 +29,7 @@ exports.login = catchAsync(async (req, res, next) => {
     let isMatch = await user.verifyPassword(password, user.password)
     if (!isMatch) return next({
         status: 400,
-        error: 'invalid password'
+        error: 'invalid credentials'
     })
     sendToken(user, 200, res)
 })

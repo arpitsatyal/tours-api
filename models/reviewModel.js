@@ -32,7 +32,7 @@ let reviewSchema = new mongoose.Schema({
 })
 
 reviewSchema.pre(/^find/, function(next) {
-    this.populate({path: 'tour writer'})
+    this.populate({path: 'tour'})
     next()
 })
 
@@ -49,7 +49,7 @@ reviewSchema.statics.calcAvgRatings = async function(tourID) {
        }
    ])
    await Tour.findByIdAndUpdate(tourID, {
-    ratingsAvg: stats[0].avgRatings,
+    ratingsAverage: stats[0].avgRatings,
     ratingsQuantity: stats[0].numRatings
    })
 //    console.log(stats)

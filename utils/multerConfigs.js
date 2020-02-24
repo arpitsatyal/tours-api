@@ -33,7 +33,7 @@ exports.uploadSingle = (req, res, next) => {
         // ### when uploading using diskstorage ###
         // let file = req.files.imageCover[0]
         // req.body.imageCover = file.filename
-
+        if(!req.files) return next()
         if (req.files.imageCover) {
             req.body.imageCover = `${Date.now()}-image.png`
             // console.log('filename>>>', req.files.imageCover[0]) => does NOT have filename
@@ -51,6 +51,7 @@ exports.uploadSingle = (req, res, next) => {
 
 exports.uploadMultiple = (req, res, next) => {
     try {
+        if(!req.files) return next()
         if (!req.files.images) return next()
         req.body.images = []
         let allFiles = req.files.images

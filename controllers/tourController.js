@@ -59,30 +59,28 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
     })
 })
 
-exports.getTour = async (req, res, next) => {
-    Tour.findById(req.params.id).populate('reviews')
-        .then(tour => {
+exports.getTour = catchAsync(async (req, res, next) => {
+   let tour = await Tour.findById(req.params.id).populate('reviews')
                 res.status(200).json({
                     status: 'success',
                     tour
-                })
-        }).catch(e => next(e))
-}
+        })
+})
 
-exports.createTour = (req, res, next) => {
+exports.createTour = catchAsync(async(req, res, next) => {
     // console.log('reqfiles', req.files.imageCover) => undefined if invalid; set by filter function
     if (req.fileError) { return next({ error: 'invalid file format dude' }) }
-    Tour.create({
+    console.log('req body', req.body)
+    let tour = await Tour.create({
         ...req.body,
         owner: req.user._id
-    }).then(result => {
+    })
         res.status(201).json({
             status: 'success',
-            total: result.length,
-            result
-        })
-    }).catch(err => next(err))
-}
+            total: tour.length,
+            tour
+    })
+})
 
 exports.updateTour = catchAsync(async (req, res, next) => {
     if (req.fileError) { return next({ error: 'invalid file format dude' }) }

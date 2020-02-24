@@ -23,14 +23,18 @@ Router.route('/')
     tourController.createTour)
 
 Router.route('/:id')
-.get(tourController.getTour)
+
+.get(authController.protect,
+    tourController.getTour)
 
 .patch(
+    authController.protect,
     multerConfigs.setMulter,
     multerConfigs.uploadSingle,
     multerConfigs.uploadMultiple,
     tourController.updateTour)
 
-.delete(tourController.deleteTour)
+.delete(authController.protect,
+    tourController.deleteTour)
 
 module.exports = Router
