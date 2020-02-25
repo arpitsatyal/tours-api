@@ -1,6 +1,7 @@
 let Tour = require('../models/tourModel')
 let catchAsync = require('../utils/catchAsync')
 let { deleteFile } = require('../utils/multerConfigs')
+let mapTours = require('../utils/map_tour')
 
 exports.aliasTopTours = catchAsync(async (req, res, next) => {
     req.query.limit = '5'
@@ -70,9 +71,10 @@ exports.getTour = catchAsync(async (req, res, next) => {
 exports.createTour = catchAsync(async(req, res, next) => {
     // console.log('reqfiles', req.files.imageCover) => undefined if invalid; set by filter function
     if (req.fileError) { return next({ error: 'invalid file format dude' }) }
-    console.log('req body', req.body)
+    toCreate = mapTours({}, req.body)
+    console.log('that object>>', toCreate)
     let tour = await Tour.create({
-        ...req.body,
+        ...toCreate,
         owner: req.user._id
     })
         res.status(201).json({
@@ -84,9 +86,8 @@ exports.createTour = catchAsync(async(req, res, next) => {
 
 exports.updateTour = catchAsync(async (req, res, next) => {
     if (req.fileError) { return next({ error: 'invalid file format dude' }) }
-
+    if(req.files) {
     Tour.findById(req.params.id).then(tour => {
-
         if (req.files.imageCover) {
             if (tour.imageCover) deleteFile(tour.imageCover, 'tours')
             // coz saved in db as tour:imageCover
@@ -98,8 +99,10 @@ exports.updateTour = catchAsync(async (req, res, next) => {
             }
         }
     }).catch(e => next(e))
-
-    let updated = await Tour.findByIdAndUpdate(req.params.id, req.body, { runValidators: true, new: true })
+    }
+    let toUpdate = mapTours({}, req.body)    
+    console.log('that object', toUpdate)
+    let updated = await Tour.findByIdAndUpdate(req.params.id, toUpdate, { new: true, runValidators: true })
     res.status(200).json({
         status: 'sucess',
         updated
@@ -109,7 +112,9 @@ exports.updateTour = catchAsync(async (req, res, next) => {
 exports.deleteTour = catchAsync(async (req, res, next) => {
     let tour = await Tour.findById(req.params.id)
     if (tour.images.length) {
-        tour.images.forEach(image => deleteFile(image, 'tours'))
+        tour.images.forEach(image => {
+            if(image != "") deleteFile(image, 'tours')
+        })
         if (tour.imageCover) deleteFile(tour.imageCover, 'tours')
     }
 
