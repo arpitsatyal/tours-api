@@ -61,14 +61,14 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
 })
 
 exports.getTour = catchAsync(async (req, res, next) => {
-   let tour = await Tour.findById(req.params.id).populate('reviews')
-                res.status(200).json({
-                    status: 'success',
-                    tour
-        })
+    let tour = await Tour.findById(req.params.id).populate('reviews')
+    res.status(200).json({
+        status: 'success',
+        tour
+    })
 })
 
-exports.createTour = catchAsync(async(req, res, next) => {
+exports.createTour = catchAsync(async (req, res, next) => {
     // console.log('reqfiles', req.files.imageCover) => undefined if invalid; set by filter function
     if (req.fileError) { return next({ error: 'invalid file format dude' }) }
     toCreate = mapTours({}, req.body)
@@ -77,30 +77,30 @@ exports.createTour = catchAsync(async(req, res, next) => {
         ...toCreate,
         owner: req.user._id
     })
-        res.status(201).json({
-            status: 'success',
-            total: tour.length,
-            tour
+    res.status(201).json({
+        status: 'success',
+        total: tour.length,
+        tour
     })
 })
 
 exports.updateTour = catchAsync(async (req, res, next) => {
     if (req.fileError) { return next({ error: 'invalid file format dude' }) }
-    if(req.files) {
-    Tour.findById(req.params.id).then(tour => {
-        if (req.files.imageCover) {
-            if (tour.imageCover) deleteFile(tour.imageCover, 'tours')
-            // coz saved in db as tour:imageCover
+    if (req.files) {
+        Tour.findById(req.params.id).then(tour => {
+            if (req.files.imageCover) {
+                if (tour.imageCover) deleteFile(tour.imageCover, 'tours')
+                // coz saved in db as tour:imageCover
 
-        } else if (req.files.images) {
-            if (tour.images) {
-                let allImages = tour.images
-                allImages.forEach(image => deleteFile(image, 'tours'))
+            } else if (req.files.images) {
+                if (tour.images) {
+                    let allImages = tour.images
+                    allImages.forEach(image => deleteFile(image, 'tours'))
+                }
             }
-        }
-    }).catch(e => next(e))
+        }).catch(e => next(e))
     }
-    let toUpdate = mapTours({}, req.body)    
+    let toUpdate = mapTours({}, req.body)
     console.log('that object', toUpdate)
     let updated = await Tour.findByIdAndUpdate(req.params.id, toUpdate, { new: true, runValidators: true })
     res.status(200).json({
@@ -109,15 +109,45 @@ exports.updateTour = catchAsync(async (req, res, next) => {
     })
 })
 
+exports.searchTour = catchAsync(async (req, res, next) => {
+    let condition = {}
+    
+    switch (req.body.durationTime) {
+        case '0-10':
+            condition.duration = { $lte: 10 }
+            break
+        case '10-20':
+            condition.duration = { $gte: 10, $lte: 20 }
+            break
+        case '20 +':
+            condition.duration = { $gte: 20 }
+            break
+    }
+
+    if (req.body.minPrice) {
+        condition.price = { $gte: req.body.minPrice }
+    } else if (req.body.maxPrice) {
+        condition.price = { $lte: req.body.maxPrice }
+    } else if (req.body.minPrice && req.body.maxPrice) {
+        condition.price = { $gte: req.body.minPrice, $lte: req.body.maxPrice }
+    }
+
+    let toSearch = mapTours(condition, req.body)
+    let searched = await Tour.find(toSearch)
+    console.log('search by db', searched)
+    console.log('searched condition', toSearch)
+    if (!searched.length) return next({ error: 'no match found' })
+    res.status(200).json({
+        status: 'success', total: searched.length, searched
+    })
+})
+
 exports.deleteTour = catchAsync(async (req, res, next) => {
     let tour = await Tour.findById(req.params.id)
     if (tour.images.length) {
-        tour.images.forEach(image => {
-            if(image != "") deleteFile(image, 'tours')
-        })
+        tour.images.forEach(image => deleteFile(image, 'tours'))
         if (tour.imageCover) deleteFile(tour.imageCover, 'tours')
     }
-
     await Tour.findByIdAndDelete(req.params.id)
     res.status(204).json(null)
 })

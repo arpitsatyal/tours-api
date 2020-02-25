@@ -5,18 +5,19 @@ let authController = require('../controllers/authController')
 let reviewRouter = require('../routes/reviewRoute')
 let multerConfigs = require('../utils/multerConfigs')
 
-Router.use('/:tourId/reviews', reviewRouter)
-
 Router.route('/top-5-cheap')
 .get(tourController.aliasTopTours, tourController.getAllTours)
 Router.get('/most-expensive-tours', 
 tourController.mostExpensiveTours, tourController.getAllTours)
 
+Router.use(authController.protect)
+
+Router.use('/:tourId/reviews', reviewRouter)
+
 Router.route('/')
-.get(authController.protect,
-    tourController.getAllTours)
+.get(tourController.getAllTours)
     
-.post(authController.protect,
+.post(
     multerConfigs.setMulter,
     multerConfigs.uploadSingle,
     multerConfigs.uploadMultiple,
@@ -24,17 +25,17 @@ Router.route('/')
 
 Router.route('/:id')
 
-.get(authController.protect,
-    tourController.getTour)
+.get(tourController.getTour)
 
 .patch(
-    authController.protect,
     multerConfigs.setMulter,
     multerConfigs.uploadSingle,
     multerConfigs.uploadMultiple,
     tourController.updateTour)
 
-.delete(authController.protect,
+.delete(
     tourController.deleteTour)
+
+Router.post('/search', tourController.searchTour)
 
 module.exports = Router

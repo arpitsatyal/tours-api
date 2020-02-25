@@ -3,7 +3,8 @@ let mongoose = require('mongoose')
 let tourSchema = mongoose.Schema({
     name: {
         type: String,
-        required: true
+        required: true,
+        lowercase: true
     },
     maxGroupSize: {
         type: Number
@@ -41,7 +42,8 @@ let tourSchema = mongoose.Schema({
     },
     summary: {
         type: String,
-        trim: true
+        trim: true,
+        lowercase: true
     },
     images: [String],
     imageCover: String,
