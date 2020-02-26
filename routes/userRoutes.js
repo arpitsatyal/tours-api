@@ -10,8 +10,8 @@ Router.post('/forgotPassword', authController.forgotPassword)
 Router.patch('/resetPassword/:token', authController.resetPassword)
 Router.get('/checkUsername/:username', userController.checkUsername)
 
-Router.use(authController.protect,
-    authController.restrictTo('admin', 'guide'))
+Router.use(authController.protect)
+Router.patch('/changePassword', authController.updatePassword)
 
 Router.route('/')
     .get(userController.getAllUsers)

@@ -34,6 +34,9 @@ let tourSchema = mongoose.Schema({
     price: {
         type: Number
     },
+    location: {
+        type: String
+    },
     priceDiscount: {
         type: String,
         validate(val) {

@@ -111,7 +111,7 @@ exports.updateTour = catchAsync(async (req, res, next) => {
 
 exports.searchTour = catchAsync(async (req, res, next) => {
     let condition = {}
-    
+
     switch (req.body.durationTime) {
         case '0-10':
             condition.duration = { $lte: 10 }
@@ -121,6 +121,18 @@ exports.searchTour = catchAsync(async (req, res, next) => {
             break
         case '20 +':
             condition.duration = { $gte: 20 }
+            break
+    }
+
+    switch (req.body.maxGroup) {
+        case '0-10':
+            condition.maxGroupSize = { $lte: 10 }
+            break
+        case '10-20':
+            condition.maxGroupSize = { $gte: 10, $lte: 20 }
+            break
+        case '20 +':
+            condition.maxGroupSize = { $gte: 20 }
             break
     }
 

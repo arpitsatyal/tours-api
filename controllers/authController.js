@@ -3,6 +3,7 @@ let User = require('../models/userModel')
 let catchAsync = require('../utils/catchAsync')
 let sendEmail = require('../utils/email')
 let crypto = require('crypto')
+let mapUsers = require('../utils/map_users')
 
 let signToken = id => jwt.sign({ id }, process.env.JWT_SECRET)
 
@@ -15,7 +16,8 @@ let sendToken = (user, statusCode, res) => {
 }
 
 exports.signUp = catchAsync(async (req, res, next) => {
-    let newUser = await User.create(req.body)
+    let toCreate = mapUsers({}, req.body)
+    let newUser = await User.create(toCreate)
     sendToken(newUser, 201, res)
 })
 
@@ -107,6 +109,24 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
         await user.save()
 
     // 4 log the user in
+    sendToken(user, 200, res)
+})
+
+exports.updatePassword = catchAsync(async(req, res, next) => {
+    // 1 get user
+    let user = await User.findById(req.user._id).select('+password')
+    // 2 verify password
+    console.log('current=',req.body.passwordCurrent)
+    console.log('psd=', req.body.password)
+    console.log('confirm=',req.body.passwordConfirm)
+    
+    let isMatch = await user.verifyPassword(req.body.passwordCurrent, user.password)
+    if(!isMatch) return next({error: 'invalid current password'})
+    // 3 update password
+    user.password = req.body.password
+    user.passwordConfirm = req.body.passwordConfirm
+    await user.save()
+    // 4 log the user in, send jwt
     sendToken(user, 200, res)
 })
 

@@ -20,6 +20,9 @@ module.exports = function(obj1, obj2) {
     if(obj2.images) {
         obj1.images = obj2.images
     }
+    if(obj2.location) {
+        obj1.location = obj2.location
+    }
     if(obj2.imageCover) {
         obj1.imageCover = obj2.imageCover
     }

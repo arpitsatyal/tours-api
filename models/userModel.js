@@ -33,6 +33,13 @@ let userSchema = new mongoose.Schema({
         type: String,
         default: 'default.jpg'
     },
+    passwordConfirm: {
+        type: String,
+        validate: function(val) {
+            return val === this.password
+        }, 
+        message: 'passwords dont match'
+    },
     passwordResetToken: String,
     passwordResetExpires: Date
 })
@@ -52,9 +59,9 @@ userSchema.virtual('reviews', {
     foreignField: 'writer'
 })
 
-
 userSchema.pre('save', async function(next) {
     this.password = await bcrypt.hash(this.password, 16)
+    this.passwordConfirm = undefined
     next()
 })
 

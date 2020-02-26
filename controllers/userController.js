@@ -1,6 +1,7 @@
 let User = require('../models/userModel')
 let catchAsync = require('../utils/catchAsync')
 let { deleteFile } = require('../utils/multerConfigs')
+let mapUsers = require('./../utils/map_users')
 
 exports.getAllUsers = catchAsync(async (req, res, next) => {
     let users = await User.find().select('-__v').select('-password')
@@ -26,7 +27,10 @@ exports.updateUser = catchAsync(async(req, res, next) => {
     if(user.profilePic !== 'default.jpg') {
     deleteFile(user.profilePic, 'users')
     }
-    let updated = await User.findByIdAndUpdate(req.params.id, req.body, { runValidators: true, new: true })
+    condition = {}
+    let toUpdate = mapUsers(condition, req.body)
+    console.log(toUpdate)
+    let updated = await User.findByIdAndUpdate(req.params.id, toUpdate, {  runValidators: true, new: true })
     res.status(200).json({
         status: 'sucess',
         updated
