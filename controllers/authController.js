@@ -65,8 +65,9 @@ exports.forgotPassword = async (req, res, next) => {
     let resetToken = user.createResetToken()
     await user.save({ validateBeforeSave: false })
 
-    // send it as user's email
-    let resetURL = `${req.protocol}://${req.get('host')}api/v1/users/resetPassword/${resetToken}`
+    // send the front end url
+    let resetURL = `${req.headers.origin}/auth/resetPassword/${resetToken}`
+    // console.log(resetURL)
     let message = `forgot yer password? dont worry, submit this with your new password to ${resetURL}`
     try {
         await sendEmail({
@@ -104,6 +105,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     if(!user) return next( { error: 'token has expired' } )
 
         user.password = req.body.password
+        user.passwordConfirm = req.body.passwordConfirm
         user.passwordResetToken = undefined
         user.passwordResetExpires = undefined
         await user.save()
@@ -119,7 +121,7 @@ exports.updatePassword = catchAsync(async(req, res, next) => {
     console.log('current=',req.body.passwordCurrent)
     console.log('psd=', req.body.password)
     console.log('confirm=',req.body.passwordConfirm)
-    
+
     let isMatch = await user.verifyPassword(req.body.passwordCurrent, user.password)
     if(!isMatch) return next({error: 'invalid current password'})
     // 3 update password

@@ -35,6 +35,7 @@ exports.uploadSingle = (req, res, next) => {
         // req.body.imageCover = file.filename
         if(!req.files) return next()
         if (req.files.imageCover) {
+            console.log('req files??', req.files)
             req.body.imageCover = `${Date.now()}-image.png`
             // console.log('filename>>>', req.files.imageCover[0]) => does NOT have filename
             resize(req.files.imageCover[0].buffer, 'tours', req.body.imageCover)

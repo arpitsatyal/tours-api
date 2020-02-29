@@ -48,6 +48,9 @@ let tourSchema = mongoose.Schema({
         trim: true,
         lowercase: true
     },
+    startDate: {
+        type: Date
+    },
     images: [String],
     imageCover: String,
     owner: {

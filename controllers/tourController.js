@@ -2,6 +2,7 @@ let Tour = require('../models/tourModel')
 let catchAsync = require('../utils/catchAsync')
 let { deleteFile } = require('../utils/multerConfigs')
 let mapTours = require('../utils/map_tour')
+let Review = require('../models/reviewModel')
 
 exports.aliasTopTours = catchAsync(async (req, res, next) => {
     req.query.limit = '5'
@@ -45,18 +46,21 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
     // PAGINATION
     let numTours = await Tour.countDocuments()
     let page = req.query.page * 1 || 1
-    let toLimit = req.query.limit * 1 || numTours
+    let toLimit = req.query.limit * 1 || numTours.length
     let toSkip = (page - 1) * toLimit
     query = query.skip(toSkip).limit(toLimit)
     if (req.query.page) {
         if (toSkip >= numTours) return next({ error: 'no tours left mate' })
     }
+    console.log(req.query)
+ 
     let tours = await query
 
     res.status(200).json({
         status: 'success',
         total: tours.length,
-        tours
+        tours,
+        numTours
     })
 })
 
@@ -69,6 +73,7 @@ exports.getTour = catchAsync(async (req, res, next) => {
 })
 
 exports.createTour = catchAsync(async (req, res, next) => {
+    console.log('req files??', req.files)
     // console.log('reqfiles', req.files.imageCover) => undefined if invalid; set by filter function
     if (req.fileError) { return next({ error: 'invalid file format dude' }) }
     toCreate = mapTours({}, req.body)
@@ -146,7 +151,6 @@ exports.searchTour = catchAsync(async (req, res, next) => {
 
     let toSearch = mapTours(condition, req.body)
     let searched = await Tour.find(toSearch)
-    console.log('search by db', searched)
     console.log('searched condition', toSearch)
     if (!searched.length) return next({ error: 'no match found' })
     res.status(200).json({
@@ -158,10 +162,13 @@ exports.deleteTour = catchAsync(async (req, res, next) => {
     let tour = await Tour.findById(req.params.id)
     if (tour.images.length) {
         tour.images.forEach(image => deleteFile(image, 'tours'))
-        if (tour.imageCover) deleteFile(tour.imageCover, 'tours')
     }
+    if (tour.imageCover) deleteFile(tour.imageCover, 'tours')
+    await Review.deleteMany({tour: req.params.id })
     await Tour.findByIdAndDelete(req.params.id)
     res.status(204).json(null)
+    req.tour = tour
+
 })
 
 

@@ -14,7 +14,7 @@ Router.route('/')
 
 .delete(authController.protect,
     authController.restrictTo('admin'),
-    reviewController.deleteReview)
+    reviewController.deleteAllReview)
 
 Router.route('/:id')
 
@@ -23,5 +23,8 @@ Router.route('/:id')
 
 .patch(authController.protect,
     reviewController.updateReview)
+
+.delete(authController.protect,
+    reviewController.deleteOneReview)
 
 module.exports = Router

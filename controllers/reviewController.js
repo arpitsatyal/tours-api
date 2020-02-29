@@ -1,5 +1,6 @@
 let catchAsync = require('../utils/catchAsync')
 let Review = require('../models/reviewModel')
+let mapReviews = require('../utils/map_reviews')
 
 exports.setTourAndUserIds = (req, res, next) => {
     if(!req.body.tour) req.body.tour = req.params.tourId
@@ -9,7 +10,7 @@ exports.setTourAndUserIds = (req, res, next) => {
 
 exports.getAllReviews = catchAsync(async(req, res, next) => {
     
-    let reviews = await Review.find({writer: req.user._id})
+    let reviews = await Review.find({tour: req.body.tour})
     res.status(200).json({
         status: 'success',
         total: reviews.length,
@@ -26,8 +27,9 @@ exports.getReview =  catchAsync(async(req, res, next) => {
 })
 
 exports.createReview = catchAsync(async(req, res, next) => {
+    let toCreate = mapReviews({}, req.body)
     let reviews = await Review.create({
-        ...req.body,
+        ...toCreate,
         writer: req.body.user,
         tour: req.body.tour
 
@@ -47,7 +49,16 @@ exports.updateReview = catchAsync(async(req, res, next) => {
     })
 })
 
-exports.deleteReview = catchAsync(async(req, res, next) => {
+exports.deleteAllReview = catchAsync(async(req, res, next) => {
     await Review.deleteMany()
     res.status(204).json(null)
 })
+
+exports.deleteOneReview = catchAsync(async(req, res, next) => {
+    await Review.findByIdAndDelete(req.params.id)
+    res.status(204).json(null)
+})
+
+
+
+

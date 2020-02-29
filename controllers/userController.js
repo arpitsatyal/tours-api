@@ -28,8 +28,9 @@ exports.updateUser = catchAsync(async(req, res, next) => {
     deleteFile(user.profilePic, 'users')
     }
     condition = {}
+    console.log('req files', req.files)
     let toUpdate = mapUsers(condition, req.body)
-    console.log(toUpdate)
+    console.log('here',toUpdate)
     let updated = await User.findByIdAndUpdate(req.params.id, toUpdate, {  runValidators: true, new: true })
     res.status(200).json({
         status: 'sucess',

@@ -33,8 +33,7 @@ Router.route('/:id')
     multerConfigs.uploadMultiple,
     tourController.updateTour)
 
-.delete(
-    tourController.deleteTour)
+.delete(tourController.deleteTour)
 
 Router.post('/search', tourController.searchTour)
 
