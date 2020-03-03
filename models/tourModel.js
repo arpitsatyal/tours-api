@@ -53,11 +53,18 @@ let tourSchema = mongoose.Schema({
     },
     images: [String],
     imageCover: String,
+    guides: [
+        {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        }
+    ],
     owner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }
-}, {
+}
+, {
     timestamps: true
 })
 
@@ -72,8 +79,8 @@ tourSchema.virtual('reviews', {
 
 tourSchema.pre(/^find/, function (next) {
     this.populate({
-        path: 'owner',
-        select: 'username'
+        path: 'owner guides',
+        select: 'username profilePic role'
     })
     next()
 })

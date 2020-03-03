@@ -52,11 +52,13 @@ reviewSchema.statics.calcAvgRatings = async function(tourID) {
         ratingsAverage: stats[0].avgRatings,
         ratingsQuantity: stats[0].numRatings
        })
+       console.log(stats)
     } else {
         await Tour.findByIdAndUpdate(tourID, {
             ratingsAverage: 0,
             ratingsQuantity: 0
            })
+           console.log('eta', stats)
     }
 } catch (e) { console.log(e) }
 }
@@ -71,7 +73,7 @@ reviewSchema.pre(/^findOneAnd/, async function(next) {
 })
 
 reviewSchema.post(/^findOneAnd/, async function() {
-    await this.rev.constructor.calcAvgRatings(this.rev.tour)
+    await this.rev.constructor.calcAvgRatings(this.rev.tour._id)
 })
 
 let reviewModel = mongoose.model('Review', reviewSchema)

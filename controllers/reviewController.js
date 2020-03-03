@@ -42,7 +42,9 @@ exports.createReview = catchAsync(async(req, res, next) => {
 })
 
 exports.updateReview = catchAsync(async(req, res, next) => {
-    let updated = await Review.findByIdAndUpdate(req.params.id, req.body, {runValidators: true, new: true})
+    let toCreate = mapReviews({}, req.body)
+    console.log(' to cr', toCreate)
+    let updated = await Review.findByIdAndUpdate(req.params.id, toCreate, {runValidators: true, new: true})
     res.status(200).json({
         status: 'success',
         updated

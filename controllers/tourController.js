@@ -53,7 +53,7 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
         if (toSkip >= numTours) return next({ error: 'no tours left mate' })
     }
     console.log(req.query)
- 
+
     let tours = await query
 
     res.status(200).json({
@@ -105,9 +105,15 @@ exports.updateTour = catchAsync(async (req, res, next) => {
             }
         }).catch(e => next(e))
     }
-    let toUpdate = mapTours({}, req.body)
-    console.log('that object', toUpdate)
-    let updated = await Tour.findByIdAndUpdate(req.params.id, toUpdate, { new: true, runValidators: true })
+    let updated
+   
+    if(req.body.guides) {
+     updated = await Tour.findByIdAndUpdate(req.params.id, {$push: {guides: req.body.guides}}, { new: true, runValidators: true })
+    } else {
+        let toUpdate = mapTours({}, req.body)
+        console.log('that object', toUpdate)
+        updated = await Tour.findByIdAndUpdate(req.params.id, toUpdate, { new: true, runValidators: true })
+    }
     res.status(200).json({
         status: 'sucess',
         updated
@@ -164,7 +170,7 @@ exports.deleteTour = catchAsync(async (req, res, next) => {
         tour.images.forEach(image => deleteFile(image, 'tours'))
     }
     if (tour.imageCover) deleteFile(tour.imageCover, 'tours')
-    await Review.deleteMany({tour: req.params.id })
+    await Review.deleteMany({ tour: req.params.id })
     await Tour.findByIdAndDelete(req.params.id)
     res.status(204).json(null)
     req.tour = tour
