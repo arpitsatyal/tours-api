@@ -45,7 +45,7 @@ exports.protect = catchAsync(async (req, res, next) => {
         })
     }
     let token = req.headers.authorization.split(' ')[1]
-    let verified = jwt.verify(token, process.env.JWT_SECRET)
+    let verified = jwt.verify(token, process.env.JWT_KEY)
     // console.log(verified) => has iat and id
     let user = await User.findById(verified.id)
     req.user = user
