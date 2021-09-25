@@ -35,5 +35,5 @@ module.exports = function(obj1, obj2) {
     if(obj2.ratingsQuantity) {
         obj1.ratingsQuantity = obj2.ratingsQuantity
     }
-    return obj1
+    // return obj1
 }

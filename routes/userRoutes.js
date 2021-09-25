@@ -19,7 +19,8 @@ Router.route('/')
 Router.route('/:id')
     .get(userController.getUser)
 
-    .patch(multerConfig.setMulter,
+    .patch(
+        multerConfig.setMulter,
         multerConfig.uploadSingle,
         userController.updateUser)
 

@@ -53,6 +53,8 @@ let tourSchema = mongoose.Schema({
     },
     images: [String],
     imageCover: String,
+    imgVersion: { type: String, default: ''},
+    imgId: { type: String, default: ''},
     guides: [
         {
         type: mongoose.Schema.Types.ObjectId,

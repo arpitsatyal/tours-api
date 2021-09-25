@@ -3,6 +3,14 @@ let catchAsync = require('../utils/catchAsync')
 let { deleteFile } = require('../utils/multerConfigs')
 let mapTours = require('../utils/map_tour')
 let Review = require('../models/reviewModel')
+let cloudinary = require('cloudinary').v2
+
+cloudinary.config({
+    cloud_name: 'arpit7xx',
+    api_key: '797233148615947',
+    api_secret: 'lsXgwHBZbYvwOaZZssmrBCrKh0o',
+    secure: true
+})
 
 exports.aliasTopTours = catchAsync(async (req, res, next) => {
     req.query.limit = '5'
@@ -52,7 +60,7 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
     if (req.query.page) {
         if (toSkip >= numTours) return next({ error: 'no tours left mate' })
     }
-    console.log(req.query)
+    // console.log(req.query)
 
     let tours = await query
 
@@ -73,46 +81,62 @@ exports.getTour = catchAsync(async (req, res, next) => {
 })
 
 exports.createTour = catchAsync(async (req, res, next) => {
-    console.log('req files??', req.files)
+    // console.log('req files??', req.files)
     // console.log('reqfiles', req.files.imageCover) => undefined if invalid; set by filter function
-    if (req.fileError) { return next({ error: 'invalid file format dude' }) }
-    toCreate = mapTours({}, req.body)
-    console.log('that object>>', toCreate)
-    let tour = await Tour.create({
-        ...toCreate,
-        owner: req.user._id
+    // if (req.fileError) { return next({ error: 'invalid file format dude' }) }
+    let toCreate = {}
+    mapTours(toCreate, req.body.tour)
+    let tour
+    cloudinary.uploader.upload(req.body.image)
+    .then(async response => {
+        tour = await new Tour({
+           ...toCreate,
+            owner: req.user._id,
+            imgId: response.public_id,
+            imgVersion: response.version
+        })
+        await tour.save()
+            res.status(201).json({ status: 'success', tour })
     })
-    res.status(201).json({
-        status: 'success',
-        total: tour.length,
-        tour
-    })
+    .catch(err => console.log(err))
 })
 
 exports.updateTour = catchAsync(async (req, res, next) => {
-    if (req.fileError) { return next({ error: 'invalid file format dude' }) }
-    if (req.files) {
-        Tour.findById(req.params.id).then(tour => {
-            if (req.files.imageCover) {
-                if (tour.imageCover) deleteFile(tour.imageCover, 'tours')
-                // coz saved in db as tour:imageCover
+    // if (req.fileError) { return next({ error: 'invalid file format dude' }) }
+    // if (req.files) {
+    //     Tour.findById(req.params.id).then(tour => {
+    //         if (req.files.imageCover) {
+    //             if (tour.imageCover) deleteFile(tour.imageCover, 'tours')
 
-            } else if (req.files.images) {
-                if (tour.images) {
-                    let allImages = tour.images
-                    allImages.forEach(image => deleteFile(image, 'tours'))
-                }
-            }
-        }).catch(e => next(e))
-    }
+    //         } else if (req.files.images) {
+    //             if (tour.images) {
+    //                 let allImages = tour.images
+    //                 allImages.forEach(image => deleteFile(image, 'tours'))
+    //             }
+    //         }
+    //     }).catch(e => next(e))
+    // }
     let updated 
-    if(req.body.guides) {
-     updated = await Tour.findByIdAndUpdate(req.params.id, {$push: {guides: req.body.guides}}, { new: true, runValidators: true })
-    } else {
-        let toUpdate = mapTours({}, req.body)
-        console.log('that object', toUpdate)
+    cloudinary.uploader.upload(req.body.image)
+    .then(async response => {
+        // console.log('uploaded in cloud response', response)
+        let imgBody = {
+            imgId: response.public_id,
+            imgVersion: response.version
+        }
+        updated = await Tour.findByIdAndUpdate(req.params.id, {
+            imgVersion: imgBody.imgVersion,
+            imgId: imgBody.imgId
+        }, { new: true })
+    })
+  
+    // if(req.body.guides) {
+    //  updated = await Tour.findByIdAndUpdate(req.params.id, {$push: {guides: req.body.guides}}, { new: true, runValidators: true })
+    // } else {
+        let toUpdate = {}
+        mapTours(toUpdate, req.body.tour)
         updated = await Tour.findByIdAndUpdate(req.params.id, toUpdate, { new: true, runValidators: true })
-    }
+    // }
     res.status(200).json({
         status: 'sucess',
         updated
@@ -172,7 +196,6 @@ exports.deleteTour = catchAsync(async (req, res, next) => {
     await Review.deleteMany({ tour: req.params.id })
     await Tour.findByIdAndDelete(req.params.id)
     res.status(204).json(null)
-
 })
 
 

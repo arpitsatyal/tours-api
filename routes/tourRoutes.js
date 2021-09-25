@@ -4,6 +4,7 @@ let tourController = require('../controllers/tourController')
 let authController = require('../controllers/authController')
 let reviewRouter = require('../routes/reviewRoute')
 let multerConfigs = require('../utils/multerConfigs')
+let imageController = require('../controllers/imageController')
 
 Router.route('/top-5-cheap')
 .get(tourController.aliasTopTours, tourController.getAllTours)
@@ -21,6 +22,7 @@ Router.route('/')
     multerConfigs.setMulter,
     multerConfigs.uploadSingle,
     multerConfigs.uploadMultiple,
+    // imageController, 
     tourController.createTour)
 
 Router.route('/:id')
@@ -28,9 +30,10 @@ Router.route('/:id')
 .get(tourController.getTour)
 
 .patch(
-    multerConfigs.setMulter,
-    multerConfigs.uploadSingle,
-    multerConfigs.uploadMultiple,
+    // multerConfigs.setMulter,
+    // multerConfigs.uploadSingle,
+    // multerConfigs.uploadMultiple,
+    // imageController,
     tourController.updateTour)
 
 .delete(tourController.deleteTour)
