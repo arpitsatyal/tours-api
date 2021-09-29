@@ -34,9 +34,30 @@ let tourSchema = mongoose.Schema({
     price: {
         type: Number
     },
-    location: {
-        type: String
+    startLocation: {
+        // GeoJSON
+        type: {
+            type: String,
+            default: 'Point',
+            enum: ['Point']
+        },
+        coordinates: [Number],
+        address: String,
+        description: String
     },
+    locations: [
+        {
+            type: {
+                type: String,
+                default: 'Point',
+                enum: ['Point']
+            },
+            coordinates: [Number],
+            address: String,
+            description: String,
+            day: Number
+        }
+    ],
     priceDiscount: {
         type: String,
         validate(val) {
@@ -48,9 +69,7 @@ let tourSchema = mongoose.Schema({
         trim: true,
         lowercase: true
     },
-    startDate: {
-        type: Date
-    },
+    startDates: [Date],
     images: [String],
     imageCover: String,
     imgVersion: { type: String, default: ''},

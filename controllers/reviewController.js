@@ -5,6 +5,12 @@ let mapReviews = require('../utils/map_reviews')
 exports.setTourAndUserIds = (req, res, next) => {
     if(!req.body.tour) req.body.tour = req.params.tourId
     if(!req.body.user) req.body.user = req.user._id
+    if(!req.body.username) req.body.username = req.user.username
+    next()
+}
+
+exports.setTourId = (req, res, next) => {
+    req.body.tour = req.params.tourId
     next()
 }
 
@@ -31,6 +37,7 @@ exports.createReview = catchAsync(async(req, res, next) => {
     let reviews = await Review.create({
         ...toCreate,
         writer: req.body.user,
+        username: req.body.username,
         tour: req.body.tour
 
     })
@@ -43,7 +50,6 @@ exports.createReview = catchAsync(async(req, res, next) => {
 
 exports.updateReview = catchAsync(async(req, res, next) => {
     let toCreate = mapReviews({}, req.body)
-    console.log(' to cr', toCreate)
     let updated = await Review.findByIdAndUpdate(req.params.id, toCreate, {runValidators: true, new: true})
     res.status(200).json({
         status: 'success',
@@ -61,6 +67,12 @@ exports.deleteOneReview = catchAsync(async(req, res, next) => {
     res.status(204).json(null)
 })
 
-
-
-
+exports.getMyReview = catchAsync(async(req, res, next) => {
+    console.log('here at controller')
+    // let myReviews = await Review.find({username: req.body.username})
+    // console.log(myReviews)
+    // res.status(200).json({
+    //     status: 'success',
+    //     myReviews
+    // })
+})

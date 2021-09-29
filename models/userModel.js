@@ -33,6 +33,8 @@ let userSchema = new mongoose.Schema({
         type: String,
         default: 'default.jpg'
     },
+    imgVersion: { type: String, default: ''},
+    imgId: { type: String, default: ''},
     passwordConfirm: {
         type: String,
         validate: function(val) {

@@ -4,8 +4,8 @@ let reviewController = require('../controllers/reviewController')
 let authController = require('../controllers/authController')
 
 Router.route('/')
-.get(authController.protect,
-    reviewController.setTourAndUserIds,
+.get(
+    reviewController.setTourId,
     reviewController.getAllReviews)
 
 .post(authController.protect,
@@ -18,7 +18,8 @@ Router.route('/')
 
 Router.route('/:id')
 
-.get(authController.protect,
+.get(
+    reviewController.setTourId,
     reviewController.getReview)
 
 .patch(authController.protect,

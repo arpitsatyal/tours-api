@@ -20,7 +20,7 @@ let sendToken = (user, statusCode, res) => {
 
 exports.signUp = catchAsync(async (req, res, next) => {
     let toCreate = mapUsers({}, req.body)
-    let newUser = await User.create(toCreate)
+    let newUser = await  User.create(toCreate)
     sendToken(newUser, 201, res)
 })
 

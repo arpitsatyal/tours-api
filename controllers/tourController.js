@@ -1,14 +1,13 @@
 let Tour = require('../models/tourModel')
 let catchAsync = require('../utils/catchAsync')
-let { deleteFile } = require('../utils/multerConfigs')
 let mapTours = require('../utils/map_tour')
 let Review = require('../models/reviewModel')
 let cloudinary = require('cloudinary').v2
 
 cloudinary.config({
-    cloud_name: 'arpit7xx',
-    api_key: '797233148615947',
-    api_secret: 'lsXgwHBZbYvwOaZZssmrBCrKh0o',
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.CLOUD_API_KEY,
+    api_secret: process.env.CLOUD_API_SECRET,
     secure: true
 })
 
@@ -61,9 +60,7 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
         if (toSkip >= numTours) return next({ error: 'no tours left mate' })
     }
     // console.log(req.query)
-
     let tours = await query
-
     res.status(200).json({
         status: 'success',
         total: tours.length,
@@ -81,9 +78,6 @@ exports.getTour = catchAsync(async (req, res, next) => {
 })
 
 exports.createTour = catchAsync(async (req, res, next) => {
-    // console.log('req files??', req.files)
-    // console.log('reqfiles', req.files.imageCover) => undefined if invalid; set by filter function
-    // if (req.fileError) { return next({ error: 'invalid file format dude' }) }
     let toCreate = {}
     mapTours(toCreate, req.body.tour)
     let tour
@@ -98,101 +92,81 @@ exports.createTour = catchAsync(async (req, res, next) => {
         await tour.save()
             res.status(201).json({ status: 'success', tour })
     })
-    .catch(err => console.log(err))
+    .catch(err => next(err))
 })
 
 exports.updateTour = catchAsync(async (req, res, next) => {
-    // if (req.fileError) { return next({ error: 'invalid file format dude' }) }
-    // if (req.files) {
-    //     Tour.findById(req.params.id).then(tour => {
-    //         if (req.files.imageCover) {
-    //             if (tour.imageCover) deleteFile(tour.imageCover, 'tours')
+    let toUpdate = {}
+    mapTours(toUpdate, req.body.tour)
 
-    //         } else if (req.files.images) {
-    //             if (tour.images) {
-    //                 let allImages = tour.images
-    //                 allImages.forEach(image => deleteFile(image, 'tours'))
-    //             }
-    //         }
-    //     }).catch(e => next(e))
-    // }
-    let updated 
-    cloudinary.uploader.upload(req.body.image)
-    .then(async response => {
-        // console.log('uploaded in cloud response', response)
-        let imgBody = {
-            imgId: response.public_id,
-            imgVersion: response.version
-        }
-        updated = await Tour.findByIdAndUpdate(req.params.id, {
-            imgVersion: imgBody.imgVersion,
-            imgId: imgBody.imgId
-        }, { new: true })
-    })
-  
-    // if(req.body.guides) {
-    //  updated = await Tour.findByIdAndUpdate(req.params.id, {$push: {guides: req.body.guides}}, { new: true, runValidators: true })
-    // } else {
-        let toUpdate = {}
-        mapTours(toUpdate, req.body.tour)
-        updated = await Tour.findByIdAndUpdate(req.params.id, toUpdate, { new: true, runValidators: true })
-    // }
-    res.status(200).json({
-        status: 'sucess',
-        updated
-    })
+    if(req.body.image) {
+        cloudinary.uploader.upload(req.body.image)
+        .then(async response => {
+            let imgBody = {
+                imgId: response.public_id,
+                imgVersion: response.version
+            }
+            updated = await Tour.findByIdAndUpdate(req.params.id, {
+                ...toUpdate,
+                imgVersion: imgBody.imgVersion,
+                imgId: imgBody.imgId
+            }, { new: true })
+        })
+    } else { 
+        Tour.findByIdAndUpdate(req.params.id, {...toUpdate }, { new: true })
+        .then(async doc => {
+            if (req.body.tour.startDate) await Tour.findByIdAndUpdate(req.params.id, { $push: { startDates: req.body.tour.startDate } })
+            if (req.body.tour.locations.hasOwnProperty('description')) {
+                await Tour.findByIdAndUpdate(req.params.id, {
+                    $push: { locations: { description: req.body.tour.locations.description } }
+                })
+                let locations = []
+                let tour = await Tour.findById(req.params.id)
+                locations = tour.locations
+                locations.forEach(async loc => {
+                    if (loc.description === req.body.tour.locations.description) if (req.body.tour.locations.longitude && req.body.tour.locations.latitude) {
+                        loc.coordinates.push(req.body.tour.locations.longitude, req.body.tour.locations.latitude)
+                        await tour.save()
+                    }
+                })
+            }
+            if (req.body.tour.startLocation.hasOwnProperty('description')) {
+                await Tour.findByIdAndUpdate(req.params.id, { $set: { 'startLocation.description': req.body.tour.startLocation.description } })
+            }
+            res.status(200).json({
+                status: 'sucess',
+                doc
+            })
+        })
+    }
 })
 
 exports.searchTour = catchAsync(async (req, res, next) => {
     let condition = {}
-
-    switch (req.body.durationTime) {
-        case '0-10':
-            condition.duration = { $lte: 10 }
-            break
-        case '10-20':
-            condition.duration = { $gte: 10, $lte: 20 }
-            break
-        case '20 +':
-            condition.duration = { $gte: 20 }
-            break
-    }
-
-    switch (req.body.maxGroup) {
-        case '0-10':
-            condition.maxGroupSize = { $lte: 10 }
-            break
-        case '10-20':
-            condition.maxGroupSize = { $gte: 10, $lte: 20 }
-            break
-        case '20 +':
-            condition.maxGroupSize = { $gte: 20 }
-            break
-    }
-
-    if (req.body.minPrice) {
-        condition.price = { $gte: req.body.minPrice }
-    } else if (req.body.maxPrice) {
-        condition.price = { $lte: req.body.maxPrice }
-    } else if (req.body.minPrice && req.body.maxPrice) {
-        condition.price = { $gte: req.body.minPrice, $lte: req.body.maxPrice }
-    }
-
-    let toSearch = mapTours(condition, req.body)
-    let searched = await Tour.find(toSearch)
-    console.log('searched condition', toSearch)
-    if (!searched.length) return next({ error: 'no match found' })
-    res.status(200).json({
-        status: 'success', total: searched.length, searched
-    })
+    mapTours(condition, req.body)
+    // console.log(req.body)
+    console.log('condition', condition)
+    let final = []
+    Tour.find(condition)
+        .then(async tours => {
+            if (req.body.startLocation.hasOwnProperty('description')) {
+                let withStartLocation = await Tour.find({ 'startLocation.description': req.body.startLocation.description })
+                tours.forEach(tour => {
+                    withStartLocation.forEach(loc => {
+                        if (tour.name === loc.name) final.push(loc)
+                    })
+                })
+            } else {
+                final = tours
+            }
+            res.status(200).json({
+                status: 'success', results: final.length, final
+            })
+        })
+        .catch(err => next(err))
 })
 
 exports.deleteTour = catchAsync(async (req, res, next) => {
-    let tour = await Tour.findById(req.params.id)
-    if (tour.images.length) {
-        tour.images.forEach(image => deleteFile(image, 'tours'))
-    }
-    if (tour.imageCover) deleteFile(tour.imageCover, 'tours')
     await Review.deleteMany({ tour: req.params.id })
     await Tour.findByIdAndDelete(req.params.id)
     res.status(204).json(null)

@@ -2,7 +2,6 @@ let upload = require('./multer')()
 let sharp = require('sharp')
 let fs = require('fs')
 let path = require('path')
-let cloudinary = require('cloudinary').v2
 
 exports.setMulter = upload.fields([
     {
@@ -29,34 +28,19 @@ async function resize(file, path, body) {
         .toFile(`uploads/${path}/${body}`)
 }
 
-cloudinary.config({
-    cloud_name: 'arpit7xx',
-    api_key: '797233148615947',
-    api_secret: 'lsXgwHBZbYvwOaZZssmrBCrKh0o',
-    secure: true
-})
-
 exports.uploadSingle = (req, res, next) => {
     try {
-        // if(!req.files) return next()
-        //  console.log('req ko files', req.files)
-        // if (req.files.images) {
-            // req.body.imageCover = `${Date.now()}-image.png`
-                // Tour.updateOne()
-            // resize(req.files.imageCover[0].buffer, 'tours', req.body.images)
-        // }
+        if(!req.files) return next()
+         console.log('req ko files', req.files)
+        if (req.files.images) {
+            req.body.imageCover = `${Date.now()}-image.png`
+            resize(req.files.imageCover[0].buffer, 'tours', req.body.images)
+        }
 
-        // if (req.files.profilePic) {
-        //     req.body.profilePic = `${Date.now()}-user.png`
-        //     resize(req.files.profilePic[0].buffer, 'users', req.body.profilePic)
-        //     resize(req.files.profilePic[0].buffer, 'tours', req.body.profilePic)
-        //     cloudinary.v2.uploader.upload(req.files.profilePic[0], {
-        //         resource_type: "image", chunk_size: 6000000
-        //     })
-        //     .then(response => {
-        //         console.log('uploaded in cloud response', response)
-        //     })
-        // }
+        if (req.files.profilePic) {
+            req.body.profilePic = `${Date.now()}-user.png`
+            resize(req.files.profilePic[0].buffer, 'users', req.body.profilePic)
+        }
 
         next()
     } catch (e) { next(e) }
