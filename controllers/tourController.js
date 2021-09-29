@@ -7,9 +7,9 @@ let cloudinary = require('cloudinary').v2
 cloudinary.config({
     cloud_name: process.env.CLOUD_NAME,
     api_key: process.env.CLOUD_API_KEY,
-    api_secret: process.env.CLOUD_API_SECRET,
-    secure: true
+    api_secret: process.env.CLOUD_API_SECRET
 })
+
 
 exports.aliasTopTours = catchAsync(async (req, res, next) => {
     req.query.limit = '5'

@@ -124,10 +124,6 @@ exports.updatePassword = catchAsync(async(req, res, next) => {
     // 1 get user
     let user = await User.findById(req.user._id).select('+password')
     // 2 verify password
-    console.log('current=',req.body.passwordCurrent)
-    console.log('psd=', req.body.password)
-    console.log('confirm=',req.body.passwordConfirm)
-
     let isMatch = await user.verifyPassword(req.body.passwordCurrent, user.password)
     if(!isMatch) return next({error: 'invalid current password'})
     // 3 update password
