@@ -1,6 +1,5 @@
 let app = require('./app')
 let mongoose = require('mongoose')
-require('dotenv').config( {path: './config.env'} )
 
 mongoose.connect('mongodb+srv://arpit:okcomputer@cluster0.0lu7v.mongodb.net/toursapi?retryWrites=true&w=majority', {
     useNewUrlParser: true,
