@@ -6,8 +6,8 @@ let crypto = require('crypto')
 let mapUsers = require('../utils/map_users')
 
 let signToken = id => jwt.sign({ id }, 
-    `${process.env.JWT_KEY}`
-    // process.env.JWT_KEY
+    // `${process.env.JWT_KEY}`
+    process.env.JWT_KEY
     )
 
 let sendToken = (user, statusCode, res) => {
@@ -49,8 +49,8 @@ exports.protect = catchAsync(async (req, res, next) => {
     }
     let token = req.headers.authorization.split(' ')[1]
     let verified = jwt.verify(token, 
-        `${process.env.JWT_KEY}`
-        // process.env.JWT_KEY
+        // `${process.env.JWT_KEY}`
+        process.env.JWT_KEY
         )
     // console.log(verified) => has iat and id
     let user = await User.findById(verified.id)

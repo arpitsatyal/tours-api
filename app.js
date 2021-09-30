@@ -2,7 +2,7 @@ let express = require('express')
 let app = express()
 let morgan = require('morgan')
 let path = require('path')
-require('dotenv').config()
+require('dotenv').config({ path: './config.env' })
 
 let userRoutes = require('./routes/userRoutes')
 let tourRoutes = require('./routes/tourRoutes')

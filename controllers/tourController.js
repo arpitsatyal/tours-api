@@ -125,7 +125,7 @@ exports.updateTour = catchAsync(async (req, res, next) => {
                 locations = tour.locations
                 locations.forEach(async loc => {
                     if (loc.description === req.body.tour.locations.description) if (req.body.tour.locations.longitude && req.body.tour.locations.latitude) {
-                        loc.coordinates.push(req.body.tour.locations.longitude, req.body.tour.locations.latitude)
+                        loc.coordinates.push(req.body.tour.locations.latitude, req.body.tour.locations.longitude)
                         await tour.save()
                     }
                 })
